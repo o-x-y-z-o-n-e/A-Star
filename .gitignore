@@ -1,0 +1,8 @@
+.vs/
+.vsconfig
+
+*.filters
+*.user
+[Oo]bj/
+[Bb]in/
+[Tt]mp/
