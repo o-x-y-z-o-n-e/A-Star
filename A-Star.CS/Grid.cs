@@ -5,25 +5,40 @@ namespace AStar {
 
 	public class Grid {
 
-		int width; public int Width => width;
-		int height; public int Height => height;
-		Node[,] grid;
+		
+		float scale = 1f; public float Scale => scale;
+		int width = 1; public int Width => width;
+		int height = 1; public int Height => height;
+		float offsetX = 0; public float OffsetX => offsetX;
+		float offsetY = 0; public float OffsetY => offsetY;
+
+		Node[,] grid = null;
 
 
-		Node start;
-		Node end;
+		Node start = null;
+		Node end = null;
 
 
 		//
 
 
-		public Grid(int width, int height) {
+		public Grid(int width, int height) => Init(width, height, 0, 0, 1f);
+		public Grid(int width, int height, float offsetX, float offsetY, float scale) => Init(width, height, offsetX, offsetY, scale);
+
+
+		//
+
+
+		void Init(int width, int height, float offsetX, float offsetY, float scale) {
 			this.width = Math.Abs(width);
 			this.height = Math.Abs(height);
+			this.offsetX = offsetX;
+			this.offsetY = offsetY;
+			this.scale = scale;
 
 			grid = new Node[this.width, this.height];
 
-			for(int x = 0; x < this.width; x++) {
+			for (int x = 0; x < this.width; x++) {
 				for (int y = 0; y < this.height; y++) {
 					grid[x, y] = new Node(x, y);
 				}
@@ -34,7 +49,21 @@ namespace AStar {
 		//
 
 
-		public Node Get(int x, int y) {
+		public Node WorldToNode(float x, float y) {
+			int xi = RoundToInt((x / scale) - offsetX);
+			int yi = RoundToInt((y / scale) - offsetY);
+
+			if (xi < 0 || xi >= width) return null;
+			if (yi < 0 || yi >= height) return null;
+
+			return grid[xi, yi];
+		}
+
+
+		//
+
+
+		public Node IndexToNode(int x, int y) {
 			if (x < 0 || x >= width) return null;
 			if (y < 0 || y >= height) return null;
 
@@ -138,8 +167,13 @@ namespace AStar {
 				for (int y = -1; y <= 1; y++) {
 					if (x == 0 && y == 0) continue;
 
-					if (x >= 0 && x < width && y >= 0 && y < height) {
-						Node n = Get(x, y);
+					int gx = node.X + x;
+					int gy = node.Y + y;
+
+					
+
+					if (gx >= 0 && gx < width && gy >= 0 && gy < height) {
+						Node n = IndexToNode(gx, gy);
 
 						if (!n.Blocked) nodes.Add(n);
 					}
@@ -209,5 +243,19 @@ namespace AStar {
 			return cost;
 		}
 
+
+		//
+
+
+		int RoundToInt(float f) {
+			int i = (int)f;
+
+			f -= i;
+
+			if (f > 0.5f) i++;
+			else if (f < -0.5f) i--;
+
+			return i;
+		}
 	}
 }

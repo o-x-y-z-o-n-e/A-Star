@@ -41,7 +41,17 @@ namespace AStar {
 
 
 		public void SetBlocked(bool blocked) => this.blocked = blocked;
+
+
+		//
+
+
 		public void SetParent(Node parent) => this.parent = parent;
+
+
+		//
+
+
 		public void SetCosts(int g, int h) {
 			this.g = g;
 			this.h = h;
