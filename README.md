@@ -4,7 +4,13 @@
 
 This project is in very early stages, currently there is a working prototype for .NET 5 (C#).
 
+### Todo
+- Node Weighting
+- Path Smoothing
+- Unity Integration
+- Motor Guiding
+
 ### Planned Languages
 - C++
-- C# (Currently working on)
+- C# (Currently being developed)
 - Python
