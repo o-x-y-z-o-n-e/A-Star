@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace AStar {
@@ -19,14 +20,14 @@ namespace AStar {
 		Node end = null;
 
 
-		//
+		//----------------------------------------------------------------------------------------------------------------------------------<
 
 
 		public Grid(int width, int height) => Init(width, height, 0, 0, 1f);
 		public Grid(int width, int height, float offsetX, float offsetY, float scale) => Init(width, height, offsetX, offsetY, scale);
 
 
-		//
+		//----------------------------------------------------------------------------------------------------------------------------------<
 
 
 		void Init(int width, int height, float offsetX, float offsetY, float scale) {
@@ -46,7 +47,7 @@ namespace AStar {
 		}
 
 
-		//
+		//----------------------------------------------------------------------------------------------------------------------------------<
 
 
 		public Node WorldToNode(float x, float y) {
@@ -60,7 +61,7 @@ namespace AStar {
 		}
 
 
-		//
+		//----------------------------------------------------------------------------------------------------------------------------------<
 
 
 		public Node IndexToNode(int x, int y) {
@@ -71,7 +72,7 @@ namespace AStar {
 		}
 
 
-		//
+		//----------------------------------------------------------------------------------------------------------------------------------<
 
 
 		public List<Node> GetPath(Node start, Node end) {
@@ -80,13 +81,13 @@ namespace AStar {
 			this.start = start;
 			this.end = end;
 
-			List<Node> open = new List<Node>();
+			Heap open = new Heap(width * height);
 			HashSet<Node> closed = new HashSet<Node>();
 
 			open.Add(start);
 
 			while (open.Count > 0) {
-				Node current = GetCheapest(open);
+				Node current = open.Peek(0);
 
 				open.Remove(current);
 				closed.Add(current);
@@ -103,7 +104,7 @@ namespace AStar {
 		}
 
 
-		//
+		//----------------------------------------------------------------------------------------------------------------------------------<
 
 
 		void Clear() {
@@ -118,25 +119,10 @@ namespace AStar {
 		}
 
 
-		//
+		//----------------------------------------------------------------------------------------------------------------------------------<
 
 
-		Node GetCheapest(List<Node> list) {
-			Node cheapest = list[0];
-			for(int i = 1; i < list.Count; i++) {
-				if(list[i].F <= cheapest.F) {
-					if (list[i].H < cheapest.H) cheapest = list[i];
-				}
-			}
-
-			return cheapest;
-		}
-
-
-		//
-
-
-		void AddOpenNeighbors(Node node, List<Node> open, HashSet<Node> closed) {
+		void AddOpenNeighbors(Node node, Heap open, HashSet<Node> closed) {
 			List<Node> near = GetNeighbors(node);
 
 			for(int i = 0; i < near.Count; i++) {
@@ -151,13 +137,14 @@ namespace AStar {
 					near[i].SetCosts(distance, GetDistance(near[i], end));
 					near[i].SetParent(node);
 
-					if(!isOpen) open.Add(near[i]);
+					if (!isOpen) open.Add(near[i]);
+					else open.Update(near[i]);
 				}
 			}
 		}
 
 
-		//
+		//----------------------------------------------------------------------------------------------------------------------------------<
 
 
 		List<Node> GetNeighbors(Node node) {
@@ -184,7 +171,7 @@ namespace AStar {
 		}
 
 
-		//
+		//----------------------------------------------------------------------------------------------------------------------------------<
 
 
 		List<Node> RetracePath() {
@@ -202,7 +189,7 @@ namespace AStar {
 		}
 
 
-		//
+		//----------------------------------------------------------------------------------------------------------------------------------<
 
 
 		int GetDistance(Node start, Node end) {
@@ -244,7 +231,7 @@ namespace AStar {
 		}
 
 
-		//
+		//----------------------------------------------------------------------------------------------------------------------------------<
 
 
 		int RoundToInt(float f) {
