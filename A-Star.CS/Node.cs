@@ -17,14 +17,17 @@ namespace AStar {
 		public int F => g + h;
 
 
+		int weight = 0; public int Weight => weight;
+
+
 		bool blocked = false; public bool Blocked => blocked;
-		Node parent; public Node Parent => parent;
+		Node parent; internal Node Parent => parent;
 
 
 		//----------------------------------------------------------------------------------------------------------------------------------<
 
 
-		public Node(int x, int y) {
+		internal Node(int x, int y) {
 			this.x = x;
 			this.y = y;
 		}
@@ -33,7 +36,7 @@ namespace AStar {
 		//----------------------------------------------------------------------------------------------------------------------------------<
 
 
-		public void Clear() {
+		internal void Clear() {
 			g = 0;
 			h = 0;
 			parent = null;
@@ -46,17 +49,22 @@ namespace AStar {
 
 		public void SetBlocked(bool blocked) => this.blocked = blocked;
 
+		//----------------------------------------------------------------------------------------------------------------------------------<
+
+
+		public void SetWeight(int weight) => this.weight = weight;
+
 
 		//----------------------------------------------------------------------------------------------------------------------------------<
 
 
-		public void SetParent(Node parent) => this.parent = parent;
+		internal void SetParent(Node parent) => this.parent = parent;
 
 
 		//----------------------------------------------------------------------------------------------------------------------------------<
 
 
-		public void SetCosts(int g, int h) {
+		internal void SetCosts(int g, int h) {
 			this.g = g;
 			this.h = h;
 		}

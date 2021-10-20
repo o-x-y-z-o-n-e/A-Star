@@ -129,12 +129,12 @@ namespace AStar {
 				if (closed.Contains(near[i])) continue;
 
 				//calc new cost
-				int distance = node.G + GetDistance(node, near[i]);
+				int cost = node.G + GetDistance(node, near[i]) + near[i].Weight;
 
 				bool isOpen = open.Contains(near[i]);
 
-				if(distance < near[i].G || !isOpen) {
-					near[i].SetCosts(distance, GetDistance(near[i], end));
+				if(cost < near[i].G || !isOpen) {
+					near[i].SetCosts(cost, GetDistance(near[i], end));
 					near[i].SetParent(node);
 
 					if (!isOpen) open.Add(near[i]);
