@@ -5,10 +5,11 @@
 This project is in very early stages, currently there is a working prototype for .NET 5 (C#).
 
 ### Todo
-- Node Weighting
 - Path Smoothing
 - Unity Integration
-- Motor Guiding
+  - Scanning Scene
+  - Motor Agents (like CharacterController)
+- Grid Stitching (like Chunks)
 
 ### Planned Languages
 - C++
