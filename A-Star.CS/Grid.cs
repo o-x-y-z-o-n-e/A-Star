@@ -244,5 +244,75 @@ namespace AStar {
 
 			return i;
 		}
+
+
+		//----------------------------------------------------------------------------------------------------------------------------------<
+
+
+		public void SmoothWeights(int size) {
+			if (size < 1) return;
+
+			int kernelSize = 1 + size * 2;
+			int kernelExtents = (kernelSize - 1) / 2;
+
+			int[,] horizontal = new int[width, height];
+			int[,] vertical = new int[width, height];
+
+			for(int y = 0; y < height; y++) {
+				for(int x = -kernelExtents; x <= kernelExtents; x++) {
+
+				}
+			}
+		}
+
+
+		//----------------------------------------------------------------------------------------------------------------------------------<
+
+
+		List<Node> PrunePath(List<Node> path) {
+			List<Node> corners = new List<Node>();
+
+			corners.Add(path[0]);
+
+			int dirX = 0;
+			int dirY = 0;
+
+			dirX = path[1].X - path[0].X;
+			dirY = path[1].Y - path[0].Y;
+
+			int currentCorner = 0;
+			int nextCorner = 0;
+
+			for (int i = 1; i < path.Count-1; i++) {
+				int dirX2 = path[i + 1].X - path[i].X;
+				int dirY2 = path[i + 1].Y - path[i].Y;
+
+				if (dirX2 != dirX || dirY2 != dirY) {
+					dirX = dirX2;
+					dirY = dirY2;
+
+					if (nextCorner != currentCorner) {
+						corners.Add(path[i]);
+						currentCorner = i;
+						nextCorner = i;
+
+					} else {
+						nextCorner = i + 1;
+
+						//raycast from current corner to next corner
+						//if collides, add previous raycast check as corner
+						//else continue to next node in path
+					}
+
+					
+				}
+			}
+
+			//DOUBLE CHECK THAT START & END NODES ARE INCLUDED IN PATH INSIDE FindPath()
+
+			corners.Add(path[path.Count - 1]);
+
+			return corners;
+		}
 	}
 }
