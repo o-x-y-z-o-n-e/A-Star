@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "A-Star.CS.Tests": {
-      "commandName": "Project",
-      "commandLineArgs": "input.bmp outout.bmp -pause"
-    }
-  }
-}
