@@ -258,9 +258,42 @@ namespace AStar {
 			int[,] horizontal = new int[width, height];
 			int[,] vertical = new int[width, height];
 
+			//Horizontal pass
 			for(int y = 0; y < height; y++) {
+				//First x (0 column) in row y
 				for(int x = -kernelExtents; x <= kernelExtents; x++) {
+					int sample = Math.Clamp(x, 0, kernelExtents);
+					horizontal[0, y] += grid[sample, y].Weight;
+				}
 
+				//For all other x columns in row y
+				for (int x = 1; x < width; x++) {
+					int removeSample = Math.Clamp(x - kernelExtents - 1, 0, width);
+					int addSample = Math.Clamp(x + kernelExtents, 0, width - 1);
+
+					horizontal[x, y] = horizontal[x - 1, y] - grid[removeSample, y].Weight + grid[addSample, y].Weight;
+				}
+			}
+
+			//Vertical pass
+			for (int x = 0; x < width; x++) {
+				//First x (0 column) in row y
+				for (int y = -kernelExtents; y <= kernelExtents; y++) {
+					int sample = Math.Clamp(y, 0, kernelExtents);
+					vertical[x, 0] += horizontal[x, sample];
+				}
+
+				//For all other x columns in row y
+				for (int y = 1; y < height; y++) {
+					int removeSample = Math.Clamp(y - kernelExtents - 1, 0, height);
+					int addSample = Math.Clamp(y + kernelExtents, 0, height - 1);
+
+					vertical[x, y] = vertical[x, y - 1] - horizontal[x, removeSample] + horizontal[x, addSample];
+
+
+					int weight = RoundToInt((float)vertical[x, y] / (kernelSize * kernelSize));
+
+					grid[x, y].SetWeight(weight);
 				}
 			}
 		}
