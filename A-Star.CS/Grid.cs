@@ -13,6 +13,8 @@ namespace AStar {
 		float offsetX = 0; public float OffsetX => offsetX;
 		float offsetY = 0; public float OffsetY => offsetY;
 
+		bool uniform = false; public bool Uniform => uniform;
+
 		Node[,] grid = null;
 
 
@@ -23,25 +25,28 @@ namespace AStar {
 		//----------------------------------------------------------------------------------------------------------------------------------<
 
 
-		public Grid(int width, int height) => Init(width, height, 0, 0, 1f);
-		public Grid(int width, int height, float offsetX, float offsetY, float scale) => Init(width, height, offsetX, offsetY, scale);
+		public Grid(int width, int height) => Init(width, height, 0, 0, 1f, false);
+		public Grid(int width, int height, float offsetX, float offsetY, float scale) => Init(width, height, offsetX, offsetY, scale, false);
+		public Grid(int width, int height, float offsetX, float offsetY, float scale, bool uniform) => Init(width, height, offsetX, offsetY, scale, uniform);
 
 
 		//----------------------------------------------------------------------------------------------------------------------------------<
 
 
-		void Init(int width, int height, float offsetX, float offsetY, float scale) {
+		void Init(int width, int height, float offsetX, float offsetY, float scale, bool uniform) {
 			this.width = Math.Abs(width);
 			this.height = Math.Abs(height);
 			this.offsetX = offsetX;
 			this.offsetY = offsetY;
 			this.scale = scale;
+			this.uniform = uniform;
 
 			grid = new Node[this.width, this.height];
 
 			for (int x = 0; x < this.width; x++) {
 				for (int y = 0; y < this.height; y++) {
 					grid[x, y] = new Node(x, y);
+					grid[x, y]._uniform = uniform;
 				}
 			}
 		}
@@ -250,6 +255,8 @@ namespace AStar {
 
 
 		public void SmoothWeights(int size) {
+			if (uniform) return;
+
 			if (size < 1) return;
 
 			int kernelSize = 1 + size * 2;
@@ -303,6 +310,8 @@ namespace AStar {
 
 
 		List<Node> PrunePath(List<Node> path) {
+			if (!uniform) return path;
+
 			List<Node> corners = new List<Node>();
 
 			corners.Add(path[0]);
@@ -324,28 +333,46 @@ namespace AStar {
 					dirX = dirX2;
 					dirY = dirY2;
 
-					if (nextCorner != currentCorner) {
+					if (nextCorner > currentCorner) {
 						corners.Add(path[i]);
 						currentCorner = i;
 						nextCorner = i;
 
 					} else {
 						nextCorner = i + 1;
-
-						//raycast from current corner to next corner
-						//if collides, add previous raycast check as corner
-						//else continue to next node in path
 					}
+				}
 
-					
+
+				if (nextCorner > currentCorner+1) {
+					bool hit = Collides(path[currentCorner], path[nextCorner]);
+
+					if(hit) {
+						corners.Add(path[nextCorner - 1]);
+
+						currentCorner = nextCorner - 1;
+						nextCorner = currentCorner;
+
+						dirX = path[currentCorner + 1].X - path[currentCorner].X;
+						dirY = path[currentCorner + 1].Y - path[currentCorner].Y;
+					}
 				}
 			}
-
-			//DOUBLE CHECK THAT START & END NODES ARE INCLUDED IN PATH INSIDE FindPath()
 
 			corners.Add(path[path.Count - 1]);
 
 			return corners;
+		}
+
+
+		//----------------------------------------------------------------------------------------------------------------------------------<
+
+
+		bool Collides(Node start, Node end) {
+
+
+
+			return true;
 		}
 	}
 }

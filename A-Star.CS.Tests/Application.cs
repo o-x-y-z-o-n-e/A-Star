@@ -16,6 +16,8 @@ namespace AStar.CS.Tests {
 		//----------------------------------------------------------------------------------------------------------------------------------<
 
 
+		//DOUBLE CHECK THAT START & END NODES ARE INCLUDED IN PATH INSIDE FindPath()
+
 		static int Main(string[] args) {
 			if(args.Length < 1) {
 				Console.WriteLine("No input file passed!");

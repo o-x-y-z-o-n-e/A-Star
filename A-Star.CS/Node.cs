@@ -7,6 +7,7 @@ namespace AStar {
 	public class Node {
 
 		internal int _heapIndex = 0;
+		internal bool _uniform = false;
 
 
 		int x; public int X => x;
@@ -53,6 +54,8 @@ namespace AStar {
 
 
 		public void SetWeight(int weight) {
+			if (_uniform) return;
+
 			if (weight < 0) weight = 0;
 			this.weight = weight;
 		}
