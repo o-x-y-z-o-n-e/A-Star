@@ -7,7 +7,6 @@ It is primarily focused on a grid based layout. However I might implement a gene
 
 ### Todo
 - Path Smoothing
-- Corner Pruning/Cutting
 - Unity Integration
   - Scanning Scene
   - Motor Agents
