@@ -198,39 +198,28 @@ namespace AStar {
 
 
 		int GetDistance(Node start, Node end) {
-			bool step = true;
-			int sx = start.X;
-			int sy = start.Y;
-
 			int cost = 0;
-			while (step) {
-				bool xMove = false;
-				bool yMove = false;
 
-				if (sx < end.X) {
-					xMove = true;
-					sx++;
-				} else if (sx > end.X) {
-					xMove = true;
-					sx--;
-				}
+			int dx = end.X - start.X;
+			int dy = end.Y - start.Y;
 
-				if (sy < end.Y) {
-					yMove = true;
-					sy++;
-				} else if (sy > end.Y) {
-					yMove = true;
-					sy--;
-				}
+			int adx = Math.Abs(dx);
+			int ady = Math.Abs(dy);
 
-				if (xMove && yMove) {
-					cost += 14;
-				} else if (xMove || yMove) {
-					cost += 10;
-				}
+			if(adx < ady) {
+				cost += 14 * adx;
 
-				if (sx == end.X && sy == end.Y) step = false;
+				ady -= adx;
+				adx = 0;
+			} else {
+				cost += 14 * ady;
+
+				adx -= ady;
+				ady = 0;
 			}
+
+			if (adx > 0) cost += 10 * adx;
+			else cost += 10 * ady;
 
 			return cost;
 		}
@@ -374,5 +363,58 @@ namespace AStar {
 
 			return true;
 		}
+
+
+		//----------------------------------------------------------------------------------------------------------------------------------<
+
+
+		#region Work in Progress
+
+
+		List<Node> IdenifySuccessors(Node current) {
+			List<Node> successors = new List<Node>();
+			List<Node> neighbors = GetNeighbors(current);
+
+			foreach (Node neighbor in neighbors) {
+				int dx = Math.Clamp(neighbor.X - current.X, -1, 1);
+				int dy = Math.Clamp(neighbor.Y - current.Y, -1, 1);
+
+				Node jumpPoint = Jump(current.X, current.Y, dx, dy);
+
+				if (jumpPoint != null) successors.Add(jumpPoint);
+			}
+
+			return successors;
+		}
+
+
+		//----------------------------------------------------------------------------------------------------------------------------------<
+
+
+		Node Jump(int cx, int cy, int dx, int dy) {
+			int nx = cx + dx;
+			int ny = cy + dy;
+
+			if (grid[nx, ny].Blocked) return null;
+
+			if (nx == end.X && ny == end.Y) return end;
+
+			if (nx != 0 && ny != 0) {
+				//Forced neighbor check <--
+
+				if (Jump(nx, ny, dx, 0) != null || Jump(nx, ny, 0, dy) != null) {
+					return grid[nx, ny];
+				}
+			} else {
+				if (nx != 0) {
+
+				}
+			}
+
+			return null;
+		}
+
+
+		#endregion
 	}
 }
