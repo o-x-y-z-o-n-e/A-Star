@@ -55,25 +55,15 @@ namespace AStar {
 		//----------------------------------------------------------------------------------------------------------------------------------<
 
 
-		public Node WorldToNode(float x, float y) {
-			int xi = RoundToInt((x / scale) - offsetX);
-			int yi = RoundToInt((y / scale) - offsetY);
+		void Clear() {
+			for (int x = 0; x < width; x++) {
+				for (int y = 0; y < height; y++) {
+					grid[x, y].Clear();
+				}
+			}
 
-			if (xi < 0 || xi >= width) return null;
-			if (yi < 0 || yi >= height) return null;
-
-			return grid[xi, yi];
-		}
-
-
-		//----------------------------------------------------------------------------------------------------------------------------------<
-
-
-		public Node IndexToNode(int x, int y) {
-			if (x < 0 || x >= width) return null;
-			if (y < 0 || y >= height) return null;
-
-			return grid[x, y];
+			start = null;
+			end = null;
 		}
 
 
@@ -112,19 +102,7 @@ namespace AStar {
 		//----------------------------------------------------------------------------------------------------------------------------------<
 
 
-		void Clear() {
-			for (int x = 0; x < width; x++) {
-				for (int y = 0; y < height; y++) {
-					grid[x, y].Clear();
-				}
-			}
-
-			start = null;
-			end = null;
-		}
-
-
-		//----------------------------------------------------------------------------------------------------------------------------------<
+		#region Non Uniform Functions
 
 
 		void AddOpenNeighbors(Node node, Heap open, HashSet<Node> closed) {
@@ -152,49 +130,65 @@ namespace AStar {
 		//----------------------------------------------------------------------------------------------------------------------------------<
 
 
-		List<Node> GetNeighbors(Node node) {
-			List<Node> nodes = new List<Node>();
+		public void SmoothWeights(int size) {
+			if (uniform) return;
 
-			for (int x = -1; x <= 1; x++) {
-				for (int y = -1; y <= 1; y++) {
-					if (x == 0 && y == 0) continue;
+			if (size < 1) return;
 
-					int gx = node.X + x;
-					int gy = node.Y + y;
+			int kernelSize = 1 + size * 2;
+			int kernelExtents = (kernelSize - 1) / 2;
 
-					
+			int[,] horizontal = new int[width, height];
+			int[,] vertical = new int[width, height];
 
-					if (gx >= 0 && gx < width && gy >= 0 && gy < height) {
-						Node n = IndexToNode(gx, gy);
+			//Horizontal pass
+			for (int y = 0; y < height; y++) {
+				//First x (0 column) in row y
+				for (int x = -kernelExtents; x <= kernelExtents; x++) {
+					int sample = Math.Clamp(x, 0, kernelExtents);
+					horizontal[0, y] += grid[sample, y].Weight;
+				}
 
-						if (!n.Blocked) nodes.Add(n);
-					}
+				//For all other x columns in row y
+				for (int x = 1; x < width; x++) {
+					int removeSample = Math.Clamp(x - kernelExtents - 1, 0, width);
+					int addSample = Math.Clamp(x + kernelExtents, 0, width - 1);
+
+					horizontal[x, y] = horizontal[x - 1, y] - grid[removeSample, y].Weight + grid[addSample, y].Weight;
 				}
 			}
 
-			return nodes;
-		}
+			//Vertical pass
+			for (int x = 0; x < width; x++) {
+				//First x (0 column) in row y
+				for (int y = -kernelExtents; y <= kernelExtents; y++) {
+					int sample = Math.Clamp(y, 0, kernelExtents);
+					vertical[x, 0] += horizontal[x, sample];
+				}
+
+				//For all other x columns in row y
+				for (int y = 1; y < height; y++) {
+					int removeSample = Math.Clamp(y - kernelExtents - 1, 0, height);
+					int addSample = Math.Clamp(y + kernelExtents, 0, height - 1);
+
+					vertical[x, y] = vertical[x, y - 1] - horizontal[x, removeSample] + horizontal[x, addSample];
 
 
-		//----------------------------------------------------------------------------------------------------------------------------------<
+					int weight = RoundToInt((float)vertical[x, y] / (kernelSize * kernelSize));
 
-
-		List<Node> RetracePath() {
-			List<Node> path = new List<Node>();
-			Node current = end;
-
-			while (current != start) {
-				path.Add(current);
-				current = current.Parent;
+					grid[x, y].SetWeight(weight);
+				}
 			}
-
-			path.Reverse();
-
-			return path;
 		}
 
 
+		#endregion
+
+
 		//----------------------------------------------------------------------------------------------------------------------------------<
+
+
+		#region Utils
 
 
 		int GetDistance(Node start, Node end) {
@@ -243,59 +237,86 @@ namespace AStar {
 		//----------------------------------------------------------------------------------------------------------------------------------<
 
 
-		public void SmoothWeights(int size) {
-			if (uniform) return;
-
-			if (size < 1) return;
-
-			int kernelSize = 1 + size * 2;
-			int kernelExtents = (kernelSize - 1) / 2;
-
-			int[,] horizontal = new int[width, height];
-			int[,] vertical = new int[width, height];
-
-			//Horizontal pass
-			for(int y = 0; y < height; y++) {
-				//First x (0 column) in row y
-				for(int x = -kernelExtents; x <= kernelExtents; x++) {
-					int sample = Math.Clamp(x, 0, kernelExtents);
-					horizontal[0, y] += grid[sample, y].Weight;
-				}
-
-				//For all other x columns in row y
-				for (int x = 1; x < width; x++) {
-					int removeSample = Math.Clamp(x - kernelExtents - 1, 0, width);
-					int addSample = Math.Clamp(x + kernelExtents, 0, width - 1);
-
-					horizontal[x, y] = horizontal[x - 1, y] - grid[removeSample, y].Weight + grid[addSample, y].Weight;
-				}
-			}
-
-			//Vertical pass
-			for (int x = 0; x < width; x++) {
-				//First x (0 column) in row y
-				for (int y = -kernelExtents; y <= kernelExtents; y++) {
-					int sample = Math.Clamp(y, 0, kernelExtents);
-					vertical[x, 0] += horizontal[x, sample];
-				}
-
-				//For all other x columns in row y
-				for (int y = 1; y < height; y++) {
-					int removeSample = Math.Clamp(y - kernelExtents - 1, 0, height);
-					int addSample = Math.Clamp(y + kernelExtents, 0, height - 1);
-
-					vertical[x, y] = vertical[x, y - 1] - horizontal[x, removeSample] + horizontal[x, addSample];
+		bool OnGrid(int x, int y) => x >= 0 && x < width && y >= 0 && y < height;
 
 
-					int weight = RoundToInt((float)vertical[x, y] / (kernelSize * kernelSize));
+		//----------------------------------------------------------------------------------------------------------------------------------<
 
-					grid[x, y].SetWeight(weight);
-				}
-			}
+
+		public Node WorldToNode(float x, float y) {
+			int xi = RoundToInt((x / scale) - offsetX);
+			int yi = RoundToInt((y / scale) - offsetY);
+
+			if (xi < 0 || xi >= width) return null;
+			if (yi < 0 || yi >= height) return null;
+
+			return grid[xi, yi];
 		}
 
 
 		//----------------------------------------------------------------------------------------------------------------------------------<
+
+
+		public Node IndexToNode(int x, int y) {
+			if (x < 0 || x >= width) return null;
+			if (y < 0 || y >= height) return null;
+
+			return grid[x, y];
+		}
+
+
+		//----------------------------------------------------------------------------------------------------------------------------------<
+
+
+		List<Node> GetNeighbors(Node node) {
+			List<Node> nodes = new List<Node>();
+
+			for (int x = -1; x <= 1; x++) {
+				for (int y = -1; y <= 1; y++) {
+					if (x == 0 && y == 0) continue;
+
+					int gx = node.X + x;
+					int gy = node.Y + y;
+
+
+
+					if (OnGrid(gx, gy)) {
+						Node n = IndexToNode(gx, gy);
+
+						if (!n.Blocked) nodes.Add(n);
+					}
+				}
+			}
+
+			return nodes;
+		}
+
+
+		//----------------------------------------------------------------------------------------------------------------------------------<
+
+
+		List<Node> RetracePath() {
+			List<Node> path = new List<Node>();
+			Node current = end;
+
+			while (current != start) {
+				path.Add(current);
+				current = current.Parent;
+			}
+
+			path.Reverse();
+
+			return path;
+		}
+
+
+		#endregion
+
+
+		//----------------------------------------------------------------------------------------------------------------------------------<
+
+
+		#region Raycast Path Pruning
 
 
 		List<Node> PrunePath(List<Node> path) {
@@ -365,13 +386,16 @@ namespace AStar {
 		}
 
 
+		#endregion
+
+
 		//----------------------------------------------------------------------------------------------------------------------------------<
 
 
-		#region Work in Progress
+		#region Jump Point Search
 
 
-		List<Node> IdenifySuccessors(Node current) {
+		List<Node> GetJumpPoints(Node current) {
 			List<Node> successors = new List<Node>();
 			List<Node> neighbors = GetNeighbors(current);
 
@@ -395,23 +419,62 @@ namespace AStar {
 			int nx = cx + dx;
 			int ny = cy + dy;
 
+			if (OnGrid(nx, ny)) return null;
+
 			if (grid[nx, ny].Blocked) return null;
 
 			if (nx == end.X && ny == end.Y) return end;
 
 			if (nx != 0 && ny != 0) {
-				//Forced neighbor check <--
+				//Diagonal
+				if (DiagonalObstacleCheck(nx, ny, dx, dy)) return grid[nx, ny];
 
-				if (Jump(nx, ny, dx, 0) != null || Jump(nx, ny, 0, dy) != null) {
-					return grid[nx, ny];
-				}
+				if (Jump(nx, ny, dx, 0) != null || Jump(nx, ny, 0, dy) != null) return grid[nx, ny];
+				
 			} else {
 				if (nx != 0) {
+					//Horizontal
 
+					if (HorizontalObstacleCheck(nx, ny, dx)) return grid[nx, ny];
+
+				} else {
+					//Vertical
+
+					if (VerticalObstacleCheck(nx, ny, dy)) return grid[nx, ny];
 				}
 			}
 
-			return null;
+			return Jump(nx, ny, dx, dy);
+		}
+
+
+		//----------------------------------------------------------------------------------------------------------------------------------<
+
+
+		bool HorizontalObstacleCheck(int x, int y, int dx) {
+			return
+				(grid[x, y - 1].Blocked && !grid[x + dx, y - 1].Blocked) ||
+				(grid[x, y + 1].Blocked && !grid[x + dx, y + 1].Blocked);
+		}
+
+
+		//----------------------------------------------------------------------------------------------------------------------------------<
+
+
+		bool VerticalObstacleCheck(int x, int y, int dy) {
+			return
+				(grid[x + 1, y].Blocked && !grid[x + 1, y + dy].Blocked) ||
+				(grid[x - 1, y].Blocked && !grid[x - 1, y + dy].Blocked);
+		}
+
+
+		//----------------------------------------------------------------------------------------------------------------------------------<
+
+
+		bool DiagonalObstacleCheck(int x, int y, int dx, int dy) {
+			return
+				(grid[x - dx, y].Blocked && !grid[x - dx, y + dy].Blocked) ||
+				(grid[x, y - dy].Blocked && !grid[x + dx, y - dy].Blocked);
 		}
 
 
