@@ -54,7 +54,7 @@ namespace AStar.CS.Tests {
 				Image<Rgba32> input = Image.Load<Rgba32>(inputFile);
 				Image<Rgba32> output = input.Clone();
 
-				Grid grid = new Grid(input.Width, input.Height);
+				Grid grid = new Grid(input.Width, input.Height, 0, 0, 1, true);
 
 				int gx=-1, gy=-1;
 				int rx=-1, ry=-1;
@@ -85,6 +85,11 @@ namespace AStar.CS.Tests {
 				Node end = grid.IndexToNode(rx, ry);
 
 				List<Node> path = grid.GetPath(start, end);
+
+				if(path == null) {
+					Console.WriteLine("No viable path found!");
+					return Exit();
+				}
 
 				foreach(Node node in path) {
 					if(node != start && node != end) {

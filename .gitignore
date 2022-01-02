@@ -1,10 +1,15 @@
 .vs/
 .vsconfig
 
+*.lock
 *.filters
 *.user
+
 [Oo]bj/
 [Bb]in/
 [Tt]mp/
+[Tt]arget/
+
+
 
 A-Star.CS.Tests/Properties/

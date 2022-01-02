@@ -106,22 +106,25 @@ namespace AStar {
 
 
 		void AddOpenNeighbors(Node node, Heap open, HashSet<Node> closed) {
-			List<Node> near = GetNeighbors(node);
+			List<Node> points = null;
 
-			for(int i = 0; i < near.Count; i++) {
-				if (closed.Contains(near[i])) continue;
+			if (uniform) points = GetJumpPoints(node);
+			else points = GetNeighbors(node);
+
+			for(int i = 0; i < points.Count; i++) {
+				if (closed.Contains(points[i])) continue;
 
 				//calc new cost
-				int cost = node.G + GetDistance(node, near[i]) + near[i].Weight;
+				int cost = node.G + GetDistance(node, points[i]) + points[i].Weight;
 
-				bool isOpen = open.Contains(near[i]);
+				bool isOpen = open.Contains(points[i]);
 
-				if(cost < near[i].G || !isOpen) {
-					near[i].SetCosts(cost, GetDistance(near[i], end));
-					near[i].SetParent(node);
+				if(cost < points[i].G || !isOpen) {
+					points[i].SetCosts(cost, GetDistance(points[i], end));
+					points[i].SetParent(node);
 
-					if (!isOpen) open.Add(near[i]);
-					else open.Update(near[i]);
+					if (!isOpen) open.Add(points[i]);
+					else open.Update(points[i]);
 				}
 			}
 		}
