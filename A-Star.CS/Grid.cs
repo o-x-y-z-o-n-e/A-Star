@@ -39,7 +39,7 @@ namespace AStar {
 			this.offsetX = offsetX;
 			this.offsetY = offsetY;
 			this.scale = scale;
-			this.uniform = uniform;
+			this.uniform = false; //this.uniform = uniform;
 
 			grid = new Node[this.width, this.height];
 

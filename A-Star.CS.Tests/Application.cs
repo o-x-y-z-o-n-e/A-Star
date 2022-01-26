@@ -54,7 +54,7 @@ namespace AStar.CS.Tests {
 				Image<Rgba32> input = Image.Load<Rgba32>(inputFile);
 				Image<Rgba32> output = input.Clone();
 
-				Grid grid = new Grid(input.Width, input.Height, 0, 0, 1, true);
+				Grid grid = new Grid(input.Width, input.Height, 0, 0, 1, false);
 
 				int gx=-1, gy=-1;
 				int rx=-1, ry=-1;
