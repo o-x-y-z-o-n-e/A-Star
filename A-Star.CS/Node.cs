@@ -83,7 +83,7 @@ namespace AStar {
 			int c = F.CompareTo(node.F);
 			if (c == 0) c = h.CompareTo(node.h);
 
-			return -c;
+			return c;
 		}
 
 	}

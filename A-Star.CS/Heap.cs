@@ -33,7 +33,6 @@ namespace AStar {
 
 
 		public void Add(Node node) {
-			//Console.WriteLine(count);
 			data[count] = node;
 			node._heapIndex = count;
 
@@ -47,17 +46,17 @@ namespace AStar {
 
 
 		public Node Remove(int i) {
-			Node node = data[0];
+			Node node = data[i];
 			node._heapIndex = 0;
 
 			count--;
 
-			data[0] = data[count];
-			data[0]._heapIndex = 0;
+			data[i] = data[count];
+			data[i]._heapIndex = i;
 
 			data[count] = null;
 			
-			PercolateDown(0);
+			PercolateDown(i);
 
 			return node;
 		}
@@ -72,7 +71,7 @@ namespace AStar {
 			Node parent = data[parentIndex];
 			Node node = data[i];
 
-			if(node.Compare(parent) > 0) {
+			if(node.Compare(parent) < 0) {
 				Swap(i, parentIndex);
 				PercolateUp(parentIndex);
 			}
@@ -95,7 +94,7 @@ namespace AStar {
 					if (data[rightIndex].F < data[leftIndex].F) swapIndex = rightIndex;
 				}
 
-				if(data[i].Compare(data[swapIndex]) < 0) {
+				if(data[i].Compare(data[swapIndex]) > 0) {
 					Swap(i, swapIndex);
 					PercolateDown(swapIndex);
 				}
