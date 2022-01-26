@@ -6,6 +6,7 @@ This project is in very early stages, currently there is a working prototype for
 It is primarily focused on a grid based layout. However I might implement a generic graph alternative along side it.
 
 ### Todo
+- Weight Smoothing (Currently being developed)
 - Path Smoothing
 - Unity Integration
   - Scanning Scene
@@ -13,11 +14,12 @@ It is primarily focused on a grid based layout. However I might implement a gene
 - Grid Stitching
 
 ### Possible Features
-- Jump Point Search
+- Jump Point Search (Tinkered with already, haven't got it working yet)
 - Bidirectional Search
 - Theta*
 
 ### Planned Languages
-- C++
 - C# (Currently being developed)
+- C (Currently being developed)
 - Python
+- Rust (Still learning & tinkering with language)
