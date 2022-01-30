@@ -21,6 +21,7 @@ typedef struct node_set {
 //grid & node
 void clearGrid(ASR_Grid* grid);
 void clearNode(ASR_Node* node);
+int getNodeHash(ASR_Node* node);
 int getF(ASR_Node* node);
 int compareNodes(ASR_Node* left, ASR_Node* right);
 int getDistance(ASR_Node* start, ASR_Node* end);
