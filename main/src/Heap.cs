@@ -23,9 +23,9 @@ namespace AStar {
 
 		public int Count => count;
 		public Node Peek(int i) => data[i];
-		public bool Contains(Node node) => node == data[node._heapIndex];
-		public void Update(Node node) => PercolateUp(node._heapIndex);
-		public void Remove(Node node) => Remove(node._heapIndex);
+		public bool Contains(Node node) => node == data[node.HeapIndex];
+		public void Update(Node node) => PercolateUp(node.HeapIndex);
+		public void Remove(Node node) => Remove(node.HeapIndex);
 
 
 		//----------------------------------------------------------------------------------------------------------------------------------<
@@ -33,7 +33,7 @@ namespace AStar {
 
 		public void Add(Node node) {
 			data[count] = node;
-			node._heapIndex = count;
+			node.HeapIndex = count;
 
 			PercolateUp(count);
 
@@ -46,12 +46,12 @@ namespace AStar {
 
 		public Node Remove(int i) {
 			Node node = data[i];
-			node._heapIndex = 0;
+			node.HeapIndex = 0;
 
 			count--;
 
 			data[i] = data[count];
-			data[i]._heapIndex = i;
+			data[i].HeapIndex = i;
 
 			data[count] = null;
 			
@@ -84,7 +84,7 @@ namespace AStar {
 			int leftIndex = 2 * i + 1;
 			int rightIndex = 2 * i + 2;
 
-			int swapIndex = 0;
+			int swapIndex;
 
 			if(leftIndex < count) {
 				swapIndex = leftIndex;
@@ -112,8 +112,8 @@ namespace AStar {
 			data[a] = nb;
 			data[b] = na;
 
-			na._heapIndex = b;
-			nb._heapIndex = a;
+			na.HeapIndex = b;
+			nb.HeapIndex = a;
 		}
 	}
 
