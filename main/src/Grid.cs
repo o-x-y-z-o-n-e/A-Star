@@ -71,12 +71,10 @@ namespace AStar {
 
 
 		private void Clear() {
-			for(int x = 0; x < width; x++) {
-				for(int y = 0; y < height; y++) {
+			for(int x = 0; x < width; x++)
+				for(int y = 0; y < height; y++)
 					grid[x, y].Clear();
-				}
-			}
-
+			
 			start = null;
 			end = null;
 		}

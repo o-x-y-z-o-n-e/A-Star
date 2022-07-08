@@ -9,14 +9,13 @@ namespace AStar.Tests {
 
 	public class Application {
 
-
 		static bool pause = false;
 
 
 		//----------------------------------------------------------------------------------------------------------------------------------<
 
 
-		//DOUBLE CHECK THAT START & END NODES ARE INCLUDED IN PATH INSIDE FindPath()
+		// DOUBLE CHECK THAT START & END NODES ARE INCLUDED IN PATH INSIDE FindPath()
 
 		public static int Main(string[] args) {
 			if(args.Length < 1) {
@@ -32,16 +31,19 @@ namespace AStar.Tests {
 			}
 
 
-			if (args.Length > 2) {
-				if (args[2] == "-pause" || args[2] == "-p") pause = true;
+			if(args.Length > 2) {
+				if(args[2] == "-pause" || args[2] == "-p")
+					pause = true;
 			}
 
 
 			string inputFile = args[0];
 			string outputFile = "";
 
-			if (args.Length > 1) outputFile = args[1];
-			else outputFile = "out.bmp";
+			if(args.Length > 1)
+				outputFile = args[1];
+			else
+				outputFile = "out.bmp";
 
 
 			if(!File.Exists(inputFile)) {
@@ -59,17 +61,18 @@ namespace AStar.Tests {
 				int gx=-1, gy=-1;
 				int rx=-1, ry=-1;
 
-				for (int x = 0; x < grid.Width; x++) {
+				for(int x = 0; x < grid.Width; x++) {
 					for(int y = 0; y < grid.Height; y++) {
 						byte r = input[x, y].R;
 						byte g = input[x, y].G;
 						byte b = input[x, y].B;
 
-						if (r == 0 && g == 0 && b == 0) grid.IndexToNode(x, y).SetBlocked(true);
-						else if (r == 255 && g == 0 && b == 0) {
+						if(r == 0 && g == 0 && b == 0)
+							grid.IndexToNode(x, y).SetBlocked(true);
+						else if(r == 255 && g == 0 && b == 0) {
 							rx = x;
 							ry = y;
-						} else if (r == 0 && g == 255 && b == 0) {
+						} else if(r == 0 && g == 255 && b == 0) {
 							gx = x;
 							gy = y;
 						}
@@ -91,11 +94,9 @@ namespace AStar.Tests {
 					return Exit();
 				}
 
-				foreach(Node node in path) {
-					if(node != start && node != end) {
+				foreach(Node node in path)
+					if(node != start && node != end)
 						output[node.X, node.Y] = Rgba32.ParseHex("0000FF");
-					}
-				}
 
 				output.SaveAsBmp(outputFile);
 
