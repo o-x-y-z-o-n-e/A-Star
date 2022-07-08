@@ -6,20 +6,28 @@ namespace AStar {
 
 	public class Grid {
 
-		
-		float scale = 1f; public float Scale => scale;
-		int width = 1; public int Width => width;
-		int height = 1; public int Height => height;
-		float offsetX = 0; public float OffsetX => offsetX;
-		float offsetY = 0; public float OffsetY => offsetY;
 
-		bool uniform = false; public bool Uniform => uniform;
-
-		Node[,] grid = null;
+		public float Scale => scale;
+		public int Width => width;
+		public int Height => height;
+		public float OffsetX => offsetX;
+		public float OffsetY => offsetY;
+		public bool Uniform => uniform;
 
 
-		Node start = null;
-		Node end = null;
+		//----------------------------------------------------------------------------------------------------------------------------------<
+
+
+		private float scale = 1F;
+		private int width = 1;
+		private int height = 1;
+		private float offsetX;
+		private float offsetY;
+		private bool uniform;
+		private Node[,] grid;
+		private Node start;
+		private Node end;
+		private bool disposed;
 
 
 		//----------------------------------------------------------------------------------------------------------------------------------<
@@ -33,7 +41,7 @@ namespace AStar {
 		//----------------------------------------------------------------------------------------------------------------------------------<
 
 
-		void Init(int width, int height, float offsetX, float offsetY, float scale, bool uniform) {
+		private void Init(int width, int height, float offsetX, float offsetY, float scale, bool uniform) {
 			this.width = Math.Abs(width);
 			this.height = Math.Abs(height);
 			this.offsetX = offsetX;
@@ -43,8 +51,8 @@ namespace AStar {
 
 			grid = new Node[this.width, this.height];
 
-			for (int x = 0; x < this.width; x++) {
-				for (int y = 0; y < this.height; y++) {
+			for(int x = 0; x < this.width; x++) {
+				for(int y = 0; y < this.height; y++) {
 					grid[x, y] = new Node(x, y);
 					grid[x, y]._uniform = uniform;
 				}
@@ -55,9 +63,17 @@ namespace AStar {
 		//----------------------------------------------------------------------------------------------------------------------------------<
 
 
-		void Clear() {
-			for (int x = 0; x < width; x++) {
-				for (int y = 0; y < height; y++) {
+		public void Dispose() {
+			disposed = true;
+		}
+
+
+		//----------------------------------------------------------------------------------------------------------------------------------<
+
+
+		private void Clear() {
+			for(int x = 0; x < width; x++) {
+				for(int y = 0; y < height; y++) {
 					grid[x, y].Clear();
 				}
 			}
@@ -71,28 +87,31 @@ namespace AStar {
 
 
 		public List<Node> GetPath(Node start, Node end) {
+			if(disposed)
+				return null;
+
 			Clear();
 
 			this.start = start;
 			this.end = end;
 
-			Heap open = new Heap(width * height);
+			NodeHeap open = new NodeHeap(width * height);
 			HashSet<Node> closed = new HashSet<Node>();
 
 			open.Add(start);
 
-			while (open.Count > 0) {
+			while(open.Count > 0) {
 				Node current = open.Peek(0);
 
 				open.Remove(current);
 				closed.Add(current);
 
 				//Found path
-				if (current == end) return RetracePath();
+				if(current == end)
+					return RetracePath();
 
 				AddOpenNeighbors(current, open, closed);
 			}
-
 
 			//Did not find path
 			return null;
@@ -105,14 +124,17 @@ namespace AStar {
 		#region Non Uniform Functions
 
 
-		void AddOpenNeighbors(Node node, Heap open, HashSet<Node> closed) {
+		private void AddOpenNeighbors(Node node, NodeHeap open, HashSet<Node> closed) {
 			List<Node> points = null;
 
-			if (uniform) points = GetJumpPoints(node);
-			else points = GetNeighbors(node);
+			if(uniform)
+				points = GetJumpPoints(node);
+			else
+				points = GetNeighbors(node);
 
 			for(int i = 0; i < points.Count; i++) {
-				if (closed.Contains(points[i])) continue;
+				if(closed.Contains(points[i]))
+					continue;
 
 				//calc new cost
 				int cost = node.G + GetDistance(node, points[i]) + points[i].Weight;
@@ -123,8 +145,10 @@ namespace AStar {
 					points[i].SetCosts(cost, GetDistance(points[i], end));
 					points[i].SetParent(node);
 
-					if (!isOpen) open.Add(points[i]);
-					else open.Update(points[i]);
+					if(!isOpen)
+						open.Add(points[i]);
+					else
+						open.Update(points[i]);
 				}
 			}
 		}
@@ -134,9 +158,14 @@ namespace AStar {
 
 
 		public void SmoothWeights(int size) {
-			if (uniform) return;
+			if(disposed)
+				return;
 
-			if (size < 1) return;
+			if(uniform)
+				return;
+
+			if(size < 1)
+				return;
 
 			int kernelSize = 1 + size * 2;
 			int kernelExtents = (kernelSize - 1) / 2;
@@ -145,15 +174,15 @@ namespace AStar {
 			int[,] vertical = new int[width, height];
 
 			//Horizontal pass
-			for (int y = 0; y < height; y++) {
+			for(int y = 0; y < height; y++) {
 				//First x (0 column) in row y
-				for (int x = -kernelExtents; x <= kernelExtents; x++) {
+				for(int x = -kernelExtents; x <= kernelExtents; x++) {
 					int sample = Math.Clamp(x, 0, kernelExtents);
 					horizontal[0, y] += grid[sample, y].Weight;
 				}
 
 				//For all other x columns in row y
-				for (int x = 1; x < width; x++) {
+				for(int x = 1; x < width; x++) {
 					int removeSample = Math.Clamp(x - kernelExtents - 1, 0, width);
 					int addSample = Math.Clamp(x + kernelExtents, 0, width - 1);
 
@@ -162,15 +191,15 @@ namespace AStar {
 			}
 
 			//Vertical pass
-			for (int x = 0; x < width; x++) {
+			for(int x = 0; x < width; x++) {
 				//First x (0 column) in row y
-				for (int y = -kernelExtents; y <= kernelExtents; y++) {
+				for(int y = -kernelExtents; y <= kernelExtents; y++) {
 					int sample = Math.Clamp(y, 0, kernelExtents);
 					vertical[x, 0] += horizontal[x, sample];
 				}
 
 				//For all other x columns in row y
-				for (int y = 1; y < height; y++) {
+				for(int y = 1; y < height; y++) {
 					int removeSample = Math.Clamp(y - kernelExtents - 1, 0, height);
 					int addSample = Math.Clamp(y + kernelExtents, 0, height - 1);
 
@@ -194,7 +223,7 @@ namespace AStar {
 		#region Utils
 
 
-		int GetDistance(Node start, Node end) {
+		private int GetDistance(Node start, Node end) {
 			int cost = 0;
 
 			int dx = end.X - start.X;
@@ -215,8 +244,10 @@ namespace AStar {
 				ady = 0;
 			}
 
-			if (adx > 0) cost += 10 * adx;
-			else cost += 10 * ady;
+			if(adx > 0)
+				cost += 10 * adx;
+			else
+				cost += 10 * ady;
 
 			return cost;
 		}
@@ -225,13 +256,15 @@ namespace AStar {
 		//----------------------------------------------------------------------------------------------------------------------------------<
 
 
-		int RoundToInt(float f) {
+		private int RoundToInt(float f) {
 			int i = (int)f;
 
 			f -= i;
 
-			if (f > 0.5f) i++;
-			else if (f < -0.5f) i--;
+			if(f > 0.5f)
+				i++;
+			else if(f < -0.5f)
+				i--;
 
 			return i;
 		}
@@ -240,13 +273,16 @@ namespace AStar {
 		//----------------------------------------------------------------------------------------------------------------------------------<
 
 
-		bool OnGrid(int x, int y) => x >= 0 && x < width && y >= 0 && y < height;
+		private bool OnGrid(int x, int y) => x >= 0 && x < width && y >= 0 && y < height;
 
 
 		//----------------------------------------------------------------------------------------------------------------------------------<
 
 
 		public Node WorldToNode(float x, float y) {
+			if(disposed)
+				return null;
+
 			int xi = RoundToInt((x / scale) - offsetX);
 			int yi = RoundToInt((y / scale) - offsetY);
 
@@ -261,6 +297,9 @@ namespace AStar {
 
 
 		public Node IndexToNode(int x, int y) {
+			if(disposed)
+				return null;
+
 			if (x < 0 || x >= width) return null;
 			if (y < 0 || y >= height) return null;
 
@@ -271,22 +310,22 @@ namespace AStar {
 		//----------------------------------------------------------------------------------------------------------------------------------<
 
 
-		List<Node> GetNeighbors(Node node) {
+		private List<Node> GetNeighbors(Node node) {
 			List<Node> nodes = new List<Node>();
 
-			for (int x = -1; x <= 1; x++) {
-				for (int y = -1; y <= 1; y++) {
-					if (x == 0 && y == 0) continue;
+			for(int x = -1; x <= 1; x++) {
+				for(int y = -1; y <= 1; y++) {
+					if(x == 0 && y == 0)
+						continue;
 
 					int gx = node.X + x;
 					int gy = node.Y + y;
 
-
-
-					if (OnGrid(gx, gy)) {
+					if(OnGrid(gx, gy)) {
 						Node n = IndexToNode(gx, gy);
 
-						if (!n.Blocked) nodes.Add(n);
+						if(!n.Blocked)
+							nodes.Add(n);
 					}
 				}
 			}
@@ -298,11 +337,11 @@ namespace AStar {
 		//----------------------------------------------------------------------------------------------------------------------------------<
 
 
-		List<Node> RetracePath() {
+		private List<Node> RetracePath() {
 			List<Node> path = new List<Node>();
 			Node current = end;
 
-			while (current != start) {
+			while(current != start) {
 				path.Add(current);
 				current = current.Parent;
 			}
@@ -322,8 +361,10 @@ namespace AStar {
 		#region Raycast Path Pruning
 
 
-		List<Node> PrunePath(List<Node> path) {
-			if (!uniform) return path;
+		// TODO
+		private List<Node> PrunePath(List<Node> path) {
+			if(!uniform)
+				return path;
 
 			List<Node> corners = new List<Node>();
 
@@ -338,15 +379,15 @@ namespace AStar {
 			int currentCorner = 0;
 			int nextCorner = 0;
 
-			for (int i = 1; i < path.Count-1; i++) {
+			for(int i = 1; i < path.Count-1; i++) {
 				int dirX2 = path[i + 1].X - path[i].X;
 				int dirY2 = path[i + 1].Y - path[i].Y;
 
-				if (dirX2 != dirX || dirY2 != dirY) {
+				if(dirX2 != dirX || dirY2 != dirY) {
 					dirX = dirX2;
 					dirY = dirY2;
 
-					if (nextCorner > currentCorner) {
+					if(nextCorner > currentCorner) {
 						corners.Add(path[i]);
 						currentCorner = i;
 						nextCorner = i;
@@ -357,7 +398,7 @@ namespace AStar {
 				}
 
 
-				if (nextCorner > currentCorner+1) {
+				if(nextCorner > currentCorner+1) {
 					bool hit = Collides(path[currentCorner], path[nextCorner]);
 
 					if(hit) {
@@ -381,7 +422,8 @@ namespace AStar {
 		//----------------------------------------------------------------------------------------------------------------------------------<
 
 
-		bool Collides(Node start, Node end) {
+		// TODO
+		private bool Collides(Node start, Node end) {
 
 
 
@@ -398,17 +440,19 @@ namespace AStar {
 		#region Jump Point Search
 
 
-		List<Node> GetJumpPoints(Node current) {
+		// TODO: Fix/Get Working
+		private List<Node> GetJumpPoints(Node current) {
 			List<Node> successors = new List<Node>();
 			List<Node> neighbors = GetNeighbors(current);
 
-			foreach (Node neighbor in neighbors) {
+			foreach(Node neighbor in neighbors) {
 				int dx = Math.Clamp(neighbor.X - current.X, -1, 1);
 				int dy = Math.Clamp(neighbor.Y - current.Y, -1, 1);
 
 				Node jumpPoint = Jump(current.X, current.Y, dx, dy);
 
-				if (jumpPoint != null) successors.Add(jumpPoint);
+				if(jumpPoint != null)
+					successors.Add(jumpPoint);
 			}
 
 			return successors;
@@ -418,32 +462,38 @@ namespace AStar {
 		//----------------------------------------------------------------------------------------------------------------------------------<
 
 
-		Node Jump(int cx, int cy, int dx, int dy) {
+		// TODO: Fix/Get Working
+		private Node Jump(int cx, int cy, int dx, int dy) {
 			int nx = cx + dx;
 			int ny = cy + dy;
 
-			if (OnGrid(nx, ny)) return null;
+			if(OnGrid(nx, ny))
+				return null;
 
-			if (grid[nx, ny].Blocked) return null;
+			if(grid[nx, ny].Blocked)
+				return null;
 
-			if (nx == end.X && ny == end.Y) return end;
+			if(nx == end.X && ny == end.Y)
+				return end;
 
-			if (nx != 0 && ny != 0) {
+			if(nx != 0 && ny != 0) {
 				//Diagonal
-				if (DiagonalObstacleCheck(nx, ny, dx, dy)) return grid[nx, ny];
+				if(DiagonalObstacleCheck(nx, ny, dx, dy))
+					return grid[nx, ny];
 
-				if (Jump(nx, ny, dx, 0) != null || Jump(nx, ny, 0, dy) != null) return grid[nx, ny];
+				if(Jump(nx, ny, dx, 0) != null || Jump(nx, ny, 0, dy) != null)
+					return grid[nx, ny];
 				
 			} else {
-				if (nx != 0) {
+				if(nx != 0) {
 					//Horizontal
-
-					if (HorizontalObstacleCheck(nx, ny, dx)) return grid[nx, ny];
+					if(HorizontalObstacleCheck(nx, ny, dx))
+						return grid[nx, ny];
 
 				} else {
 					//Vertical
-
-					if (VerticalObstacleCheck(nx, ny, dy)) return grid[nx, ny];
+					if(VerticalObstacleCheck(nx, ny, dy))
+						return grid[nx, ny];
 				}
 			}
 
@@ -454,7 +504,7 @@ namespace AStar {
 		//----------------------------------------------------------------------------------------------------------------------------------<
 
 
-		bool HorizontalObstacleCheck(int x, int y, int dx) {
+		private bool HorizontalObstacleCheck(int x, int y, int dx) {
 			return
 				(grid[x, y - 1].Blocked && !grid[x + dx, y - 1].Blocked) ||
 				(grid[x, y + 1].Blocked && !grid[x + dx, y + 1].Blocked);
@@ -464,7 +514,7 @@ namespace AStar {
 		//----------------------------------------------------------------------------------------------------------------------------------<
 
 
-		bool VerticalObstacleCheck(int x, int y, int dy) {
+		private bool VerticalObstacleCheck(int x, int y, int dy) {
 			return
 				(grid[x + 1, y].Blocked && !grid[x + 1, y + dy].Blocked) ||
 				(grid[x - 1, y].Blocked && !grid[x - 1, y + dy].Blocked);
@@ -474,7 +524,7 @@ namespace AStar {
 		//----------------------------------------------------------------------------------------------------------------------------------<
 
 
-		bool DiagonalObstacleCheck(int x, int y, int dx, int dy) {
+		private bool DiagonalObstacleCheck(int x, int y, int dx, int dy) {
 			return
 				(grid[x - dx, y].Blocked && !grid[x - dx, y + dy].Blocked) ||
 				(grid[x, y - dy].Blocked && !grid[x + dx, y - dy].Blocked);

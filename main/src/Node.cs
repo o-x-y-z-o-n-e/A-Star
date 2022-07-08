@@ -8,21 +8,31 @@ namespace AStar {
 
 		internal int _heapIndex = 0;
 		internal bool _uniform = false;
+		internal Node Parent => parent;
 
 
-		int x; public int X => x;
-		int y; public int Y => y;
-
-		int g; public int G => g; //distance away from starting node
-		int h; public int H => h; //distance away from ending node
-		public int F => g + h;
+		//----------------------------------------------------------------------------------------------------------------------------------<
 
 
-		int weight = 0; public int Weight => weight;
+		public int X => x;					// Horizontal coordinate on the grid.
+		public int Y => y;					// Vertical coordinate on the grid.
+		public int G => g;					// Distance away from starting node.
+		public int H => h;					// Distance away from ending node.
+		public int F => g + h;              // Sum of G & H.
+		public int Weight => weight;
+		public bool Blocked => blocked;
 
 
-		bool blocked = false; public bool Blocked => blocked;
-		Node parent; internal Node Parent => parent;
+		//----------------------------------------------------------------------------------------------------------------------------------<
+
+
+		private int x;
+		private int y;
+		private int g;
+		private int h;
+		private int weight;
+		private bool blocked;
+		private Node parent;
 
 
 		//----------------------------------------------------------------------------------------------------------------------------------<
@@ -50,13 +60,17 @@ namespace AStar {
 
 		public void SetBlocked(bool blocked) => this.blocked = blocked;
 
+
 		//----------------------------------------------------------------------------------------------------------------------------------<
 
 
 		public void SetWeight(int weight) {
-			if (_uniform) return;
+			if(_uniform)
+				return;
 
-			if (weight < 0) weight = 0;
+			if(weight < 0)
+				weight = 0;
+
 			this.weight = weight;
 		}
 
@@ -79,7 +93,7 @@ namespace AStar {
 		//----------------------------------------------------------------------------------------------------------------------------------<
 
 
-		public int Compare(Node node) {
+		internal int Compare(Node node) {
 			int c = F.CompareTo(node.F);
 			if (c == 0) c = h.CompareTo(node.h);
 
