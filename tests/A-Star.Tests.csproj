@@ -1,10 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <RootNamespace>AStar.Tests</RootNamespace>
-    <StartupObject>AStar.CS.Tests.Application</StartupObject>
+    <StartupObject>AStar.Tests.Application</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\A-Star.CS\A-Star.CS.csproj" />
+    <ProjectReference Include="..\main\A-Star.csproj" />
   </ItemGroup>
 
 </Project>

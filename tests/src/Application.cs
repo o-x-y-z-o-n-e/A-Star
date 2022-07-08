@@ -5,9 +5,9 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
 
-namespace AStar.CS.Tests {
+namespace AStar.Tests {
 
-	class Application {
+	public class Application {
 
 
 		static bool pause = false;
@@ -18,7 +18,7 @@ namespace AStar.CS.Tests {
 
 		//DOUBLE CHECK THAT START & END NODES ARE INCLUDED IN PATH INSIDE FindPath()
 
-		static int Main(string[] args) {
+		public static int Main(string[] args) {
 			if(args.Length < 1) {
 				Console.WriteLine("No input file passed!");
 				Console.WriteLine("Pass \"-help\" for a list of commands.");
